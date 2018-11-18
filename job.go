@@ -33,7 +33,8 @@ type WrappedJob struct {
 	running      sync.Mutex
 	successCount uint32
 	totalCount   uint32
-	father		 *CronManager
+	father       *CronManager
+	Info         interface{}
 }
 
 
@@ -67,6 +68,14 @@ func (j *WrappedJob) Status() string {
 	default:
 		return "FAIL"
 	}
+}
+
+func (j *WrappedJob) SuccessCount() int {
+	return int(j.successCount)
+}
+
+func (j *WrappedJob) TotalCount() int {
+	return int(j.totalCount)
 }
 
 func (j *WrappedJob) Now() {

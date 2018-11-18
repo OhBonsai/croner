@@ -58,7 +58,7 @@ func (r *CronManager) SetConfig(cfg CronManagerConfig) {
 	r.timeInterrupt = cfg.TimeInterrupt
 }
 
-func (r *CronManager) Add(spec string, j JobInf) (int, error){
+func (r *CronManager) Add(spec string, j JobInf, info interface{}) (int, error){
 	schedule, err := cron.Parse(spec)
 	if err != nil {
 		return -1, err
@@ -67,6 +67,7 @@ func (r *CronManager) Add(spec string, j JobInf) (int, error){
 	entryId := int(r.MainCron.Schedule(schedule, wrappedJob))
 	r.JobMap[entryId] = wrappedJob
 	wrappedJob.Id = entryId
+	wrappedJob.Info = info
 	return entryId, nil
 }
 

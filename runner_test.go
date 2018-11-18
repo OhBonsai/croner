@@ -55,7 +55,7 @@ func TestRunning(t *testing.T) {
 	OnJobReturn(hookAppendResultToTmp)
 	DefaultManager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", GoodJob{})
+	entryId, _ := DefaultManager.Add("@every 2s", GoodJob{}, nil)
 	// sleep 3 second, tmp length should be 1
 	time.Sleep(3 * time.Second)
 	print("0000000")
@@ -87,7 +87,7 @@ func TestIgnorePanic(t *testing.T) {
 	DefaultManager.SetConfig(CronManagerConfig{true, false, 0, 0})
 	DefaultManager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{})
+	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{}, nil)
 	// sleep 5 second, tmp length should be 2, Even this is a panic job
 	time.Sleep(5 * time.Second)
 	if tmp[2] != "" || tmp[1] == ""{
@@ -114,7 +114,7 @@ func TestNotIgnorePanic(t *testing.T) {
 	DefaultManager.SetConfig(CronManagerConfig{false, false, 0, 0})
 	DefaultManager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{})
+	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{}, nil)
 	// sleep 5 second, tmp length should be 1
 	time.Sleep(5 * time.Second)
 	if tmp[1] != "" || tmp[0] == ""{
@@ -144,7 +144,7 @@ func TestNotIgnorePanic(t *testing.T) {
 //	DefaultManager.SetConfig(CronManagerConfig{false, true, 0, 0})
 //	DefaultManager.Start()
 //
-//	entryId, _ :=DefaultManager.Add("@every 2s", TimeOutJob{})
+//	entryId, _ :=DefaultManager.Add("@every 2s", TimeOutJob{}, nil)
 //	// only one running even every 2s
 //	time.Sleep(5500 * time.Millisecond)
 //	if tmp[1] != "" || tmp[0] == ""{
