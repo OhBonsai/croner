@@ -1,14 +1,15 @@
-package restcron
+package croner
 
 
 var DefaultManager *CronManager
 var permit chan struct{}
 
 
-func SetDefaultRunner(runner *CronManager){
-	DefaultManager = runner
+func SetDefaultManager(manager *CronManager){
+	DefaultManager = manager
 }
 
 func init() {
-	DefaultManager = NewCronManager(CronManagerConfig{true, false, 0, 60})
+	m := NewCronManager(CronManagerConfig{true, false, 0, 60})
+	SetDefaultManager(m)
 }

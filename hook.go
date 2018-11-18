@@ -1,4 +1,4 @@
-package restcron
+package croner
 
 import "sort"
 

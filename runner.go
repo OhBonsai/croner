@@ -1,4 +1,4 @@
-package restcron
+package croner
 
 import (
 	"gopkg.in/robfig/cron.v2"
@@ -45,7 +45,7 @@ type CronManagerConfig struct {
 
 func (r *CronManager) SetConfig(cfg CronManagerConfig) {
 	if r.running {
-		panic("Can't set config when runner running")
+		panic("Can't set config when manager running")
 	}
 
 	if r.poolSize != cfg.PoolSize && cfg.PoolSize > 0 {
@@ -82,7 +82,7 @@ func (r *CronManager) DisActive(id int) {
 
 func (r *CronManager) RemoveAll() {
 	// It's safe when deleting key in loop
-	for id, _ := range r.JobMap {
+	for id := range r.JobMap {
 		r.Remove(id)
 	}
 }
