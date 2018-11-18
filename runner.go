@@ -6,7 +6,7 @@ import (
 
 type CronManager struct {
 	JobMap        map[int] *WrappedJob
-	mainCron      *cron.Cron
+	MainCron      *cron.Cron
 	jobReturns    chan JobRunReturn
 	stop          chan struct{}
 	ignorePanic   bool
@@ -64,19 +64,19 @@ func (r *CronManager) Add(spec string, j JobInf) (int, error){
 		return -1, err
 	}
 	wrappedJob := NewWrappedJob(j, r)
-	entryId := int(r.mainCron.Schedule(schedule, wrappedJob))
+	entryId := int(r.MainCron.Schedule(schedule, wrappedJob))
 	r.JobMap[entryId] = wrappedJob
 	wrappedJob.Id = entryId
 	return entryId, nil
 }
 
 func (r *CronManager) Remove(id int) {
-	r.mainCron.Remove(cron.EntryID(id))
+	r.MainCron.Remove(cron.EntryID(id))
 	delete(r.JobMap, id)
 }
 
 func (r *CronManager) DisActive(id int) {
-	r.mainCron.Remove(cron.EntryID(id))
+	r.MainCron.Remove(cron.EntryID(id))
 	r.JobMap[id].status = STOP
 }
 
@@ -88,17 +88,23 @@ func (r *CronManager) RemoveAll() {
 }
 
 func (r *CronManager) Start() {
-	r.mainCron.Start()
-	r.run()
-	r.running = true
+	if !r.running{
+		r.MainCron.Start()
+		r.run()
+		r.running = true
+	}
 }
 
 func (r *CronManager) Stop() {
-	r.mainCron.Stop()
+	r.MainCron.Stop()
 	r.stop <- struct{}{}
 	r.running = false
 }
 
+func (r *CronManager) Job(id int) (*WrappedJob, bool) {
+	v, ok := r.JobMap[id]
+	return v, ok
+}
 
 func (r *CronManager) run() {
 	go func(){

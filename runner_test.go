@@ -28,14 +28,14 @@ func (j PanicJob) Run() JobRunReturn{
 type GoodJob struct {}
 
 func (j GoodJob) Run() JobRunReturn{
-	return JobRunReturn{"Hello , I am a good job", nil }
+	return JobRunReturn{"Hello , I am a good job", nil , 0}
 }
 
 type TimeOutJob struct {}
 
 func (j TimeOutJob) Run() JobRunReturn {
 	time.Sleep(5 * time.Second)
-	return JobRunReturn{"Hello , I am a timeout job", nil }
+	return JobRunReturn{"Hello , I am a timeout job", nil , 0}
 }
 
 
@@ -118,11 +118,13 @@ func TestNotIgnorePanic(t *testing.T) {
 	// sleep 5 second, tmp length should be 1
 	time.Sleep(5 * time.Second)
 	if tmp[1] != "" || tmp[0] == ""{
+		print("Fail: Two job return")
 		t.FailNow()
 	}
 
 	// status should be "STOP"
 	if DefaultManager.JobMap[entryId].Status() != "STOP" {
+		print("Fail: Status should be Stop")
 		t.FailNow()
 	}
 

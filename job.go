@@ -40,6 +40,7 @@ type WrappedJob struct {
 type JobRunReturn struct {
 	Value interface{}
 	Error error
+	Eid   int
 }
 
 type JobInf interface {
@@ -78,7 +79,7 @@ func (j *WrappedJob) Now() {
 			if !j.father.ignorePanic {
 				j.father.DisActive(j.Id)
 			}
-			j.father.jobReturns <- JobRunReturn{nil, JobRunError{errString}}
+			j.father.jobReturns <- JobRunReturn{nil, JobRunError{errString}, j.Id}
 		}
 		return
 	}()
@@ -110,7 +111,9 @@ func (j *WrappedJob) Now() {
 		}
 	}
 
-	j.father.jobReturns <- j.Inner.Run()
+	ret := j.Inner.Run()
+	ret.Eid = j.Id
+	j.father.jobReturns <- ret
 	j.successCount += 1
 }
 
