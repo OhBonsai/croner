@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync/atomic"
 	"time"
-	"github.com/petermattis/goid"
 	"reflect"
 )
 
@@ -93,8 +92,8 @@ func (j *WrappedJob) Now() {
 		return
 	}()
 
-	print("Goroutine ID is ", goid.Get(), "\n")
-	print("Plan<", j.Name, "> ", time.Now().Minute(),":" ,time.Now().Second(), "   Wrapped JOB <", j,"> running\n")
+	//print("Goroutine ID is ", goid.Get(), "\n")
+	//print("Plan<", j.Name, "> ", time.Now().Minute(),":" ,time.Now().Second(), "   Wrapped JOB <", j,"> running\n")
 
 	// 同一时间，该任务只会执行一次， 比如一个任务要执行1小时，周期设置5s。 那么不会有更多的协程出来多次执行该任务
 	if j.father.onlyOne{
