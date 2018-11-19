@@ -137,30 +137,30 @@ func TestNotIgnorePanic(t *testing.T) {
 
 
 // Test Only One = True
-//func TestOnlyOne(t *testing.T) {
-//	resetRunner()
-//	resetTmp()
-//	OnJobReturn(hookAppendResultToTmp)
-//	DefaultManager.SetConfig(CronManagerConfig{false, true, 0, 0})
-//	DefaultManager.Start()
-//
-//	entryId, _ :=DefaultManager.Add("@every 2s", TimeOutJob{}, nil)
-//	// only one running even every 2s
-//	time.Sleep(5500 * time.Millisecond)
-//	if tmp[1] != "" || tmp[0] == ""{
-//		print("Fail: Two job return")
-//		t.FailNow()
-//	}
-//
-//	// status should be "STOP"
-//	if DefaultManager.JobMap[entryId].Status() != "RUNNING" {
-//		print("Fail: Status should be running")
-//		t.FailNow()
-//	}
-//
-//	// successTime should be 0, totalTime should be 1
-//	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
-//		DefaultManager.JobMap[entryId].totalCount != 0 {
-//		t.FailNow()
-//	}
-//}
+func TestOnlyOne(t *testing.T) {
+	resetRunner()
+	resetTmp()
+	OnJobReturn(hookAppendResultToTmp)
+	DefaultManager.SetConfig(CronManagerConfig{false, true, 0, 0})
+	DefaultManager.Start()
+
+	entryId, _ :=DefaultManager.Add("@every 2s", TimeOutJob{}, nil)
+	// only one running even every 2s
+	time.Sleep(5500 * time.Millisecond)
+	if tmp[1] != "" || tmp[0] == ""{
+		print("Fail: Two job return")
+		t.FailNow()
+	}
+
+	// status should be "STOP"
+	if DefaultManager.JobMap[entryId].Status() != "RUNNING" {
+		print("Fail: Status should be running")
+		t.FailNow()
+	}
+
+	// successTime should be 0, totalTime should be 1
+	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
+		DefaultManager.JobMap[entryId].TotalCount != 0 {
+		t.FailNow()
+	}
+}
