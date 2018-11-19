@@ -30,8 +30,8 @@ type WrappedJob struct {
 	Inner        JobInf
 	status       uint32
 	running      sync.Mutex
-	successCount uint32
-	totalCount   uint32
+	SuccessCount uint32
+	TotalCount   uint32
 	father       *CronManager
 	Info         interface{}
 }
@@ -69,17 +69,9 @@ func (j *WrappedJob) Status() string {
 	}
 }
 
-func (j *WrappedJob) SuccessCount() int {
-	return int(j.successCount)
-}
-
-func (j *WrappedJob) TotalCount() int {
-	return int(j.totalCount)
-}
-
 func (j *WrappedJob) Now() {
 	defer func() {
-		j.totalCount += 1
+		j.TotalCount += 1
 		if err := recover(); err != nil {
 			errString := fmt.Sprintf("WrappedJob-%d %s  execute fail. error is %s", j.Id, j.Name, err)
 			println(errString)
@@ -122,7 +114,7 @@ func (j *WrappedJob) Now() {
 	ret := j.Inner.Run()
 	ret.Eid = j.Id
 	j.father.jobReturns <- ret
-	j.successCount += 1
+	j.SuccessCount += 1
 }
 
 func (j *WrappedJob) Run() {

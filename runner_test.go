@@ -73,8 +73,8 @@ func TestRunning(t *testing.T) {
 	}
 
 	// successTime should be 2, totalTime should be 2
-	if DefaultManager.JobMap[entryId].successCount != 2 ||
-		DefaultManager.JobMap[entryId].totalCount != 2 {
+	if DefaultManager.JobMap[entryId].SuccessCount != 2 ||
+		DefaultManager.JobMap[entryId].TotalCount != 2 {
 			t.FailNow()
 	}
 }
@@ -100,8 +100,8 @@ func TestIgnorePanic(t *testing.T) {
 	}
 
 	// successTime should be 0, totalTime should be 2
-	if DefaultManager.JobMap[entryId].successCount != 0 ||
-		DefaultManager.JobMap[entryId].totalCount != 2 {
+	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
+		DefaultManager.JobMap[entryId].TotalCount != 2 {
 		t.FailNow()
 	}
 }
@@ -129,8 +129,8 @@ func TestNotIgnorePanic(t *testing.T) {
 	}
 
 	// successTime should be 0, totalTime should be 1
-	if DefaultManager.JobMap[entryId].successCount != 0 ||
-		DefaultManager.JobMap[entryId].totalCount != 1 {
+	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
+		DefaultManager.JobMap[entryId].TotalCount != 1 {
 		t.FailNow()
 	}
 }
@@ -159,7 +159,7 @@ func TestNotIgnorePanic(t *testing.T) {
 //	}
 //
 //	// successTime should be 0, totalTime should be 1
-//	if DefaultManager.JobMap[entryId].successCount != 0 ||
+//	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
 //		DefaultManager.JobMap[entryId].totalCount != 0 {
 //		t.FailNow()
 //	}
