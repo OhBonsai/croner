@@ -7,98 +7,120 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <!-- import Vue before Element -->
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.17/vue.min.js"></script>
     <!-- import JavaScript -->
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <style>
-        .el-header, .el-footer {
-            background-color: #B3C0D1;
-            color: #333;
-            text-align: center;
-            line-height: 60px;
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            padding: 0;
+            margin: 0;
+        }
+        #app {
+            height: 100vh;
+            position: relative;
         }
 
-        .el-aside {
-            background-color: #D3DCE6;
-            color: #333;
-            text-align: center;
-            line-height: 200px;
+        .container {
+            position: absolute;
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid #ddd;
+            left: 15%;
+            top: 10%;
+            bottom: 10%;
+            right: 15%;
         }
 
-        .el-main {
-            background-color: #E9EEF3;
-            color: #333;
-            text-align: center;
-            line-height: 160px;
+        .left {
+            width: 50%;
+            height: 60%;
+            border: 1px solid #ddd;
+            padding: 40px;
         }
 
-        body > .el-container {
-            margin-bottom: 5px;
+        .right {
+            width: 50%;
+            height: 60%;
+            border: 1px solid #ddd;
         }
 
-        .el-container:nth-child(5) .el-aside,
-        .el-container:nth-child(6) .el-aside {
-            line-height: 260px;
+        .footer {
+            height: 40%;
+            width: 100%
         }
 
-        .el-container:nth-child(7) .el-aside {
-            line-height: 320px;
+        .message-window{
+            height: 100%;
+        }
+
+        .message-window textarea{
+            height: 100%;
         }
     </style>
     <title>index</title>
 </head>
 
 <body>
-<div id="app" style="height: 100%">
-    <el-container style="height: 100%; border: 1px solid #eee">
-        <el-container>
-            <el-aside width="50%" style="background-color: rgb(238, 241, 246)">
-                <el-form ref="form" :model="form" label-width="80px">
+<div id="app">
+    <div class="container">
+        <div class="left">
+            <el-form ref="form" :model="form" label-width="100px">
+                <el-form-item label="Who">
+                    <el-input v-model="form.name" placeholder="谁说话"></el-input>
+                </el-form-item>
 
-                    <el-form-item label="Who">
-                        <el-input v-model="form.name" placeholder="谁说话"></el-input>
-                    </el-form-item>
+                <el-form-item label="Period(Sec)">
+                    <el-input v-model="form.time" placeholder="多少秒说一次"></el-input>
+                </el-form-item>
+                <el-form-item label="What">
+                    <el-input v-model="form.out" placeholder="说啥子">
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmit">Create Now</el-button>
+                    <el-button @click="onCancel">Cancel</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
 
-                    <el-form-item label="Period(Sec)">
-                        <el-input v-model="form.time" placeholder="多少秒说一次"></el-input>
-                    </el-form-item>
-                    <el-form-item label="What">
-                        <el-input v-model="form.out" placeholder="说啥子">
-                        </el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="onSubmit">Create Now</el-button>
-                        <el-button @click="onCancel">Cancel</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-aside>
 
-            <el-main>
-                <el-table
-                        :data="tableData"
-                        stripe
-                        style="width: 100%">
-                    <el-table-column
-                            prop="name"
-                            label="name"
-                            width="180">
-                    </el-table-column>
-                    <el-table-column
-                            prop="status"
-                            label="status"
-                            width="180">
-                    </el-table-column>
-                    <el-table-column
-                            prop="success"
-                            label="success/total"
-                            width="180">
-                    </el-table-column>
+        <div class="right">
+            <el-table
+                    :data="tableData"
+                    stripe
+                    height = 100%>
+                <el-table-column
+                        prop="name"
+                        label="JobName"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        prop="status"
+                        label="JobStatus"
+                        width="180">
+                </el-table-column>
+                <el-table-column
+                        prop="success"
+                        label="Success/Total">
+                </el-table-column>
+            </el-table>
+        </div>
 
-                </el-table>
-            </el-main>
-        </el-container>
-        <el-footer></el-footer>
-    </el-container>
+        <div class="footer">
+
+            <el-input
+                    type="textarea"
+                    class="message-window"
+                    placeholder="请输入内容"
+                    disabled=true
+                    v-model="textarea"
+                    >
+            </el-input>
+        </div>
+    </div>
 </div>
 <script>
 
@@ -114,7 +136,8 @@
                 name: '',
                 out: '',
                 time: "",
-            }
+            },
+            textarea: "hello\n world"
         },
         methods: {
             onSubmit() {
