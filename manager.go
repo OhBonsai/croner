@@ -120,7 +120,10 @@ func (r *CronManager) run() {
 	}()
 }
 
-
+func Validate(spec string) bool{
+	_, err := cron.Parse(spec)
+	return err == nil
+}
 
 
 
