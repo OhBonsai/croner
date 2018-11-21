@@ -67,12 +67,12 @@
 <div id="app">
     <div class="container">
         <div class="left">
-            <el-form ref="form" :model="form" label-width="100px">
+            <el-form ref="form" :model="form" :rules="rules" label-width="100px">
                 <el-form-item label="Who">
                     <el-input v-model="form.name" placeholder="谁说话"></el-input>
                 </el-form-item>
 
-                <el-form-item label="Period(Sec)">
+                <el-form-item label="Period(Sec)" type="number">
                     <el-input v-model="form.time" placeholder="多少秒说一次"></el-input>
                 </el-form-item>
                 <el-form-item label="What">
@@ -80,8 +80,8 @@
                     </el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSubmit">Create Now</el-button>
-                    <el-button @click="onCancel">Cancel</el-button>
+                    <el-button type="primary" @click="submitForm">Create Now</el-button>
+                    <el-button @click="resetForm">Reset</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -124,31 +124,94 @@
 </div>
 <script>
 
-    var app = new Vue({
-        el: '#app',
-        data: {
-            tableData: Array(10).fill({
-                name: '2016-05-02',
-                status: '王小虎',
-                success: '上海市普陀区金沙江路 1518 弄'
-            }),
-            form: {
-                name: '',
-                out: '',
-                time: "",
-            },
-            textarea: "hello\n world"
+
+    var Main = {
+        data() {
+            var checkTime = (rule, value, callback) => {
+                if (!value) {
+                    return callback(new Error("time can't be null"));
+                }
+                setTimeout(() => {
+                    if (!Number.isInteger(value)) {
+                        callback(new Error('please input int value'));
+                    } else {
+                        if (value < 1) {
+                            callback(new Error('max bigger than 1'));
+                        } else {
+                            callback();
+                        }
+                    }
+                }, 1000);
+            };
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error("can't be null"));
+                } else {
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error("can't be null"));
+                }else{
+                    callback();
+                }
+            };
+            return {
+                rules: {
+                    name: [
+                        { validator: validatePass, trigger: 'blur' }
+                    ],
+                    out: [
+                        { validator: validatePass2, trigger: 'blur' }
+                    ],
+                    time: [
+                        { validator: checkTime, trigger: 'blur' }
+                    ]
+                },
+                form: {
+                    name: '',
+                    out: '',
+                    time: "",
+                },
+                textarea: "hello\n world",
+                tableData: Array(10).fill({
+                    name: '2016-05-02',
+                    status: '王小虎',
+                    success: '上海市普陀区金沙江路 1518 弄'
+                }),
+            };
         },
         methods: {
-            onSubmit() {
-                console.log('submit!');
+            submitForm(form) {
+                //官网 this.$refs[ruleForm].validate();
+                //在实际使用中，会报错。validate未定义
+                //
+                //使用this.$refs.ruleForm.validate(); 成功。
+                this.$refs.form.validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+                fetch("127.0.0.1:8000/job", {
+                    body: JSON.stringify(job),
+                    method: "POST",
+                    headers: {'Content-Type' : 'application/json'}
+                }).then(()=>{
+                    window.alert("Create success")
+                })
             },
-            onCancel() {
-                console.log("Cancel");
+            resetForm(formName) {
+                this.$nextTick(function() {
+                    this.$refs[formName].resetFields();
+                })
             }
-        },
-        computed: {},
-        watch: {}
-    })
+        }
+    }
+    var Ctor = Vue.extend(Main)
+    new Ctor().$mount('#app')
 </script>
 </body>

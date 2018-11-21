@@ -22,15 +22,15 @@ var upgrader = websocket.Upgrader{
 }
 
 type JobS struct {
-	duration int
-	who string
-	what string
+	Duration int    `json:"Duration"`
+	Who      string `json:"Who"`
+	What     string `json:"What"`
 }
 
 
 func (j JobS) Run() croner.JobRunReturn{
 	return croner.JobRunReturn{
-		Value: fmt.Sprintf("[%s] %s: %s",time.Now().Format(time.RFC850), j.who, j.what),
+		Value: fmt.Sprintf("[%s] %s: %s",time.Now().Format(time.RFC850), j.Who, j.What),
 	}
 }
 
@@ -44,7 +44,7 @@ func CreateJob(c *gin.Context) {
 	}
 
 	// you can put some info into job
-	manager.Add(fmt.Sprintf("@every %ds", curJob.duration), curJob, nil)
+	manager.Add(fmt.Sprintf("@every %ds", curJob.Duration), curJob, nil)
 	c.JSON(200, "success")
 }
 
@@ -83,20 +83,19 @@ func Status(c *gin.Context) {
 		os.Exit(1)
 	}
 
-	var returnResponse []StatusResp
-
-	for _, v := range manager.JobMap{
-		innerJob := v.Inner.(JobS)
-		returnResponse = append(returnResponse, StatusResp{
-			Name: innerJob.who,
-			Status: v.Status(),
-			SuccessAndTotal: fmt.Sprintf("%d/%d", v.SuccessCount, v.TotalCount),
-		})
-	}
-
 	for {
-		time.Sleep(1 * time.Second)
+		returnResponse := []StatusResp{}
+
+		for _, v := range manager.JobMap{
+			innerJob := v.Inner.(JobS)
+			returnResponse = append(returnResponse, StatusResp{
+				Name: innerJob.Who,
+				Status: v.Status(),
+				SuccessAndTotal: fmt.Sprintf("%d/%d", v.SuccessCount, v.TotalCount),
+			})
+		}
 		conn.WriteJSON(returnResponse)
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -108,7 +107,7 @@ func main(){
 		ch <- say
 	})
 	croner.SetDefaultManager(manager)
-
+	manager.Start()
 
 	r := gin.Default()
 	r.LoadHTMLGlob("example/*.html")
@@ -118,5 +117,5 @@ func main(){
 	r.GET("/", func(c *gin.Context){
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
-	r.Run(":80")
+	r.Run(":8000")
 }
