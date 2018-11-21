@@ -164,3 +164,9 @@ func TestOnlyOne(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestValidate(t *testing.T) {
+	if !Validate("@every 1m") {
+		t.Fail()
+	}
+}
