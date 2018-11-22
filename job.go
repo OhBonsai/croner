@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 	"reflect"
+	"gopkg.in/robfig/cron.v2"
 )
 
 const (
@@ -34,6 +35,7 @@ type WrappedJob struct {
 	TotalCount   uint32
 	father       *CronManager
 	Info         interface{}
+	Next         time.Time
 }
 
 
@@ -115,6 +117,7 @@ func (j *WrappedJob) Now() {
 	ret.Eid = j.Id
 	j.father.jobReturns <- ret
 	j.SuccessCount += 1
+	j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
 }
 
 func (j *WrappedJob) Run() {

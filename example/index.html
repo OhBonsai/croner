@@ -208,7 +208,12 @@
                 this.$nextTick(function() {
                     this.$refs[formName].resetFields();
                 })
+            },
+            initWebSocket(){
+                const wsuri="ws://127.0.0.1:8000/echo";
+                this.
             }
+
         }
     }
     var Ctor = Vue.extend(Main)
