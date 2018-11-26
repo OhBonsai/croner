@@ -51,6 +51,12 @@
             height: 100%;
             width: 100%
         }
+
+        #table {
+            border: 1px solid black;
+            height: 100%;
+            width: 100%
+        }
     </style>
     <title>index</title>
 </head>
@@ -60,16 +66,18 @@
     <div class="container">
         <div class="left">
             <form id="form">
+                <label for="name">who:</label>
+                <input name="who" type="text" id="msg" size="64"/>
+                <input name="duration" type="text" id="msg" size="64"/>
+                <input name="what" type="text" id="msg" size="64"/>
                 <input type="submit" value="Send" />
-                <input type="text" id="msg" size="64"/>
-                <input type="text" id="msg" size="64"/>
-                <input type="text" id="msg" size="64"/>
             </form>
         </div>
 
 
         <div class="right">
-
+            <table id="table">
+            </table>
         </div>
 
         <div class="footer">
@@ -106,6 +114,29 @@ window.onload = function () {
         };
     }else{
         window.alert("Websocket is not supported")
+    }
+
+    var formElm = document.getElementById("form");
+    formElm.onsubmit = function () {
+        var postData = {};
+        for (var i=0; i<formElm.elements.length; i++) {
+            if(formElm[i].type != "submit" && formElm[i].type != "label") {
+                postData[formElm[i].name] = formElm[i].value;
+            }
+        }
+        fetch("http://127.0.0.1:8000/job", {
+            method: "POST",
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data: JSON.stringify(postData)
+        }).then(response => {
+            if (response.status !== 200) {
+                console.log('Looks like there was a problem. Status Code: ' + response.status);
+                return;
+            }
+        })
     }
 
 }

@@ -169,4 +169,35 @@ func TestValidate(t *testing.T) {
 	if !Validate("@every 1m") {
 		t.Fail()
 	}
+
+	if !Validate("* * 0-5 * * ?") {
+		t.Fail()
+	}
+
+	if !Validate("@daily") {
+		t.Fail()
+	}
+
+	if !Validate("0 0 0 ? * MON") {
+		t.Fail()
+	}
+
+	if !Validate("TZ=Asia/Shanghai 0 0 0 ? * SUN") {
+		t.Fail()
+	}
+
+	if !Validate("TZ=Asia/Shanghai 0 * * ? * 0/1") {
+		t.Fail()
+	}
 }
+
+
+func TestNext(t *testing.T) {
+	next, _ := Next("TZ=Asia/Shanghai 0 0 0 ? * 0/1")
+	fmt.Println(next.Date())
+	fmt.Println(next.Hour())
+	fmt.Println(next.Minute())
+}
+
+
+

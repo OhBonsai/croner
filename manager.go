@@ -2,6 +2,7 @@ package croner
 
 import (
 	"gopkg.in/robfig/cron.v2"
+	"time"
 )
 
 type CronManager struct {
@@ -123,6 +124,15 @@ func (r *CronManager) run() {
 func Validate(spec string) bool{
 	_, err := cron.Parse(spec)
 	return err == nil
+}
+
+func Next(spec string) (time.Time, error) {
+	schema, err := cron.Parse(spec)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return schema.Next(time.Now()), nil
 }
 
 

@@ -22,9 +22,9 @@ var upgrader = websocket.Upgrader{
 }
 
 type JobS struct {
-	Duration int    `json:"Duration"`
-	Who      string `json:"Who"`
-	What     string `json:"What"`
+	Duration string `json:"duration"`
+	Who      string `json:"who"`
+	What     string `json:"what"`
 }
 
 
@@ -44,7 +44,10 @@ func CreateJob(c *gin.Context) {
 	}
 
 	// you can put some info into job
-	manager.Add(fmt.Sprintf("@every %ds", curJob.Duration), curJob, nil)
+	_, err = manager.Add(fmt.Sprintf("@every %ds", curJob.Duration), curJob, nil)
+	if err != nil {
+		c.JSON(400, "Bad Request")
+	}
 	c.JSON(200, "success")
 }
 
