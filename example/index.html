@@ -114,9 +114,11 @@
                 <label class="label-class">name:</label>
                 <input name="who" type="text" size="64" placeholder="Please input your name" class="inputClass"/>
                 <label class="label-class">duration:</label>
-                <input name="duration" type="text" size="64" placeholder="Please input a number between 1 and 10"  class="inputClass"/>
+                <input name="duration" type="text" size="64" placeholder="Please input a number between 1 and 10"
+                       class="inputClass"/>
                 <label class="label-class">what:</label>
-                <input name="what" type="text" size="64" placeholder="Please input what you wanna say" class="inputClass"/>
+                <input name="what" type="text" size="64" placeholder="Please input what you wanna say"
+                       class="inputClass"/>
                 <input type="button" onclick="createJob()" value="Send" class="buttonClass"/>
             </form>
         </div>
@@ -186,8 +188,6 @@
                 }
                 tableBody.innerHTML = tempHtml;
             }
-
-
         } else {
             window.alert("Websocket is not supported")
         }
