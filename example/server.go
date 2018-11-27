@@ -22,7 +22,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type JobS struct {
-	Duration string `json:"duration"`
+	Duration int `json:"duration"`
 	Who      string `json:"who"`
 	What     string `json:"what"`
 }
@@ -40,13 +40,15 @@ func CreateJob(c *gin.Context) {
 	err := c.BindJSON(&curJob)
 
 	if err != nil {
-		c.JSON(400, "Bad Request")
+		c.JSON(400, err.Error())
+		return
 	}
 
 	// you can put some info into job
 	_, err = manager.Add(fmt.Sprintf("@every %ds", curJob.Duration), curJob, nil)
 	if err != nil {
-		c.JSON(400, "Bad Request")
+		c.JSON(400, err.Error())
+		return
 	}
 	c.JSON(200, "success")
 }
@@ -75,6 +77,7 @@ type StatusResp struct {
 	Name string `json:"name"`
 	Status string `json:"status"`
 	SuccessAndTotal string `json:"success"`
+	Next time.Time `json:"next"`
 }
 
 // all job status
@@ -95,6 +98,7 @@ func Status(c *gin.Context) {
 				Name: innerJob.Who,
 				Status: v.Status(),
 				SuccessAndTotal: fmt.Sprintf("%d/%d", v.SuccessCount, v.TotalCount),
+				Next: v.Next,
 			})
 		}
 		conn.WriteJSON(returnResponse)

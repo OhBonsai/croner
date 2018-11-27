@@ -9,10 +9,12 @@
         * {
             box-sizing: border-box;
         }
+
         html, body {
             padding: 0;
             margin: 0;
         }
+
         #app {
             height: 100vh;
             position: relative;
@@ -40,6 +42,7 @@
             width: 50%;
             height: 60%;
             border: 1px solid #ddd;
+            overflow-y: auto;
         }
 
         .footer {
@@ -47,16 +50,58 @@
             width: 100%
         }
 
-        #messagebox{
+        #messagebox {
             height: 100%;
             width: 100%
+        }
+
+        .label-class {
+            font-weight: bold;
+            margin-right: 6px;
+            width: 70px;
+            display: inline-block;
+        }
+
+        .inputClass {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 3px;
+            outline: none;
+            box-shadow: none;
+        }
+
+        .buttonClass {
+            display: block;
+            padding: 6px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            background: #96c5da;
         }
 
         #table {
             border: 1px solid black;
             height: 100%;
-            width: 100%
+            width: 100%;
+            border-collapse: collapse;
         }
+
+        th {
+            border: 1px solid black;
+            background: #fdd;
+            padding: 8px;
+        }
+
+        tr {
+            border: 1px solid black;
+        }
+
+        td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 4px;
+        }
+
+
     </style>
     <title>index</title>
 </head>
@@ -66,22 +111,32 @@
     <div class="container">
         <div class="left">
             <form id="form">
-                <label for="name">who:</label>
-                <input name="who" type="text" id="msg" size="64"/>
-                <input name="duration" type="text" id="msg" size="64"/>
-                <input name="what" type="text" id="msg" size="64"/>
-                <input type="submit" value="Send" />
+                <label class="label-class">name:</label>
+                <input name="who" type="text" size="64" placeholder="Please input your name" class="inputClass"/>
+                <label class="label-class">duration:</label>
+                <input name="duration" type="text" size="64" placeholder="Please input a number between 1 and 10"  class="inputClass"/>
+                <label class="label-class">what:</label>
+                <input name="what" type="text" size="64" placeholder="Please input what you wanna say" class="inputClass"/>
+                <input type="button" onclick="createJob()" value="Send" class="buttonClass"/>
             </form>
         </div>
 
 
         <div class="right">
             <table id="table">
+                <thead>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Success/Run</th>
+                <th>Next</th>
+                </thead>
+                <tbody id="bodyEle">
+                </tbody>
             </table>
         </div>
 
         <div class="footer">
-            <textarea id="messagebox" readonly="readonly" >
+            <textarea id="messagebox" readonly="readonly">
                 你好\
             </textarea>
         </div>
@@ -89,57 +144,87 @@
 </div>
 
 <script>
-window.onload = function () {
-    var conn;
-    var messagebox = document.getElementById("messagebox");
-    var messasges = [];
-    const maxCount = 20;
+    window.onload = function () {
+        var connEcho, connStatus;
+        var messagebox = document.getElementById("messagebox");
+        var tableBody = document.getElementById("bodyEle");
+        var messasges = [];
+        const maxCount = 20;
 
 
-    function addLog(item) {
-        if (messasges.length === maxCount ) {
-            messasges = messasges.slice(1, messasges.length)
-        }
-        messasges.push(item)
-    }
-
-    if (window["WebSocket"]){
-        conn = new WebSocket("ws://127.0.0.1:8000/echo");
-        conn.onclose = function (evt) {
-            window.alert("echo connection stop")
-        };
-        conn.onmessage = function (evt) {
-            addLog(evt.data);
-            messagebox.value = messasges.join("<br/>");
-        };
-    }else{
-        window.alert("Websocket is not supported")
-    }
-
-    var formElm = document.getElementById("form");
-    formElm.onsubmit = function () {
-        var postData = {};
-        for (var i=0; i<formElm.elements.length; i++) {
-            if(formElm[i].type != "submit" && formElm[i].type != "label") {
-                postData[formElm[i].name] = formElm[i].value;
+        function addLog(item) {
+            if (messasges.length === maxCount) {
+                messasges = messasges.slice(1, messasges.length)
             }
+            messasges.push(item)
         }
-        fetch("http://127.0.0.1:8000/job", {
-            method: "POST",
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            data: JSON.stringify(postData)
-        }).then(response => {
-            if (response.status !== 200) {
-                console.log('Looks like there was a problem. Status Code: ' + response.status);
-                return;
-            }
-        })
-    }
 
-}
+        if (window["WebSocket"]) {
+            connEcho = new WebSocket("ws://127.0.0.1:8000/echo");
+            connEcho.onclose = function (evt) {
+                window.alert("echo connection stop")
+            };
+            connEcho.onmessage = function (evt) {
+                addLog(evt.data);
+                messagebox.value = messasges.join(`\n`);
+            };
+
+            connStatus = new WebSocket("ws://127.0.0.1:8000/status");
+            connStatus.onclose = function (evt) {
+                window.alert("status connection stop")
+            };
+            connStatus.onmessage = function (evt) {
+                var tempHtml = '';
+                var jobStatus = JSON.parse(evt.data)
+                for (let i = 0; i < jobStatus.length; i++) {
+                    tempHtml = tempHtml + `<tr>
+<td>${ jobStatus[i].name }</td>
+<td>${ jobStatus[i].status }</td>
+<td>${ jobStatus[i].success }</td>
+<td>${ jobStatus[i].next }</td>
+</tr>`;
+                }
+                tableBody.innerHTML = tempHtml;
+            }
+
+
+        } else {
+            window.alert("Websocket is not supported")
+        }
+
+        var formElm = document.getElementById("form");
+        createJob = function () {
+            var postData = {};
+            for (var i = 0; i < formElm.elements.length; i++) {
+                if (formElm[i].type != "button") {
+                    // validate int
+                    if (formElm[i].name == "duration") {
+                        if (isNaN(formElm[i].value) || formElm[i].value < 1 || formElm[i].value > 10) {
+                            window.alert("duration must max than 1 and less than 10")
+                            return
+                        }
+                        postData[formElm[i].name] = parseInt(formElm[i].value);
+                        continue
+                    }
+
+                    postData[formElm[i].name] = formElm[i].value;
+                }
+            }
+            fetch("http://127.0.0.1:8000/job", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                body: JSON.stringify(postData)
+            }).then(response => {
+                if (response.status !== 200) {
+                    console.log('Looks like there was a problem. Status Code: ' + response.status);
+                    return;
+                }
+            })
+        }
+
+    }
 
 </script>
 
