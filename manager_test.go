@@ -7,15 +7,16 @@ import (
 )
 
 var tmp = [5]string{}
+var manager = NewCronManager(CronManagerConfig{true, false, 0, 0})
 
 func resetTmp() {
 	tmp = [5]string{}
 }
 
 func resetRunner() {
-	if DefaultManager.running{
-		DefaultManager.RemoveAll()
-		DefaultManager.Stop()
+	if manager.running{
+		manager.RemoveAll()
+		manager.Stop()
 	}
 }
 
@@ -28,21 +29,22 @@ func (j PanicJob) Run() JobRunReturn{
 type GoodJob struct {}
 
 func (j GoodJob) Run() JobRunReturn{
-	return JobRunReturn{"Hello , I am a good job", nil , 0}
+	return JobRunReturn{"Hello , I am a good job", nil}
 }
 
 type TimeOutJob struct {}
 
 func (j TimeOutJob) Run() JobRunReturn {
 	time.Sleep(5 * time.Second)
-	return JobRunReturn{"Hello , I am a timeout job", nil , 0}
+	return JobRunReturn{"Hello , I am a timeout job", nil }
 }
 
 
-func hookAppendResultToTmp(runReturn *JobRunReturn) {
+func hookAppendResultToTmp(runReturn *JobRunReturnWithEid) {
 	for i, v := range tmp{
 		if v == ""{
-			tmp[i] = fmt.Sprintf("%v", *runReturn)
+			tmpStr := fmt.Sprintf("%v", runReturn.Value)
+			tmp[i] = tmpStr
 			break
 		}
 	}
@@ -53,12 +55,11 @@ func TestRunning(t *testing.T) {
 	resetRunner()
 	resetTmp()
 	OnJobReturn(hookAppendResultToTmp)
-	DefaultManager.Start()
+	manager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", GoodJob{}, nil)
+	entryId, _ := manager.Add("@every 2s", GoodJob{}, nil)
 	// sleep 3 second, tmp length should be 1
 	time.Sleep(3 * time.Second)
-	print("0000000")
 	if tmp[1] != "" || tmp[0] == ""{
 		t.FailNow()
 	}
@@ -68,13 +69,13 @@ func TestRunning(t *testing.T) {
 		t.FailNow()
 	}
 	// status should be "IDLE"
-	if DefaultManager.JobMap[entryId].Status() != "IDLE" {
+	if manager.JobMap[entryId].Status() != "IDLE" {
 		t.FailNow()
 	}
 
 	// successTime should be 2, totalTime should be 2
-	if DefaultManager.JobMap[entryId].SuccessCount != 2 ||
-		DefaultManager.JobMap[entryId].TotalCount != 2 {
+	if manager.JobMap[entryId].SuccessCount != 2 ||
+		manager.JobMap[entryId].TotalCount != 2 {
 			t.FailNow()
 	}
 }
@@ -84,10 +85,10 @@ func TestIgnorePanic(t *testing.T) {
 	resetRunner()
 	resetTmp()
 	OnJobReturn(hookAppendResultToTmp)
-	DefaultManager.SetConfig(CronManagerConfig{true, false, 0, 0})
-	DefaultManager.Start()
+	manager.SetConfig(CronManagerConfig{true, false, 0, 0})
+	manager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{}, nil)
+	entryId, _ := manager.Add("@every 2s", PanicJob{}, nil)
 	// sleep 5 second, tmp length should be 2, Even this is a panic job
 	time.Sleep(5 * time.Second)
 	if tmp[2] != "" || tmp[1] == ""{
@@ -95,13 +96,13 @@ func TestIgnorePanic(t *testing.T) {
 	}
 
 	// status should be "Fail"
-	if DefaultManager.JobMap[entryId].Status() != "FAIL" {
+	if manager.JobMap[entryId].Status() != "FAIL" {
 		t.FailNow()
 	}
 
 	// successTime should be 0, totalTime should be 2
-	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
-		DefaultManager.JobMap[entryId].TotalCount != 2 {
+	if manager.JobMap[entryId].SuccessCount != 0 ||
+		manager.JobMap[entryId].TotalCount != 2 {
 		t.FailNow()
 	}
 }
@@ -111,10 +112,10 @@ func TestNotIgnorePanic(t *testing.T) {
 	resetRunner()
 	resetTmp()
 	OnJobReturn(hookAppendResultToTmp)
-	DefaultManager.SetConfig(CronManagerConfig{false, false, 0, 0})
-	DefaultManager.Start()
+	manager.SetConfig(CronManagerConfig{false, false, 0, 0})
+	manager.Start()
 
-	entryId, _ := DefaultManager.Add("@every 2s", PanicJob{}, nil)
+	entryId, _ := manager.Add("@every 2s", PanicJob{}, nil)
 	// sleep 5 second, tmp length should be 1
 	time.Sleep(5 * time.Second)
 	if tmp[1] != "" || tmp[0] == ""{
@@ -123,14 +124,14 @@ func TestNotIgnorePanic(t *testing.T) {
 	}
 
 	// status should be "STOP"
-	if DefaultManager.JobMap[entryId].Status() != "STOP" {
+	if manager.JobMap[entryId].Status() != "STOP" {
 		print("Fail: Status should be Stop")
 		t.FailNow()
 	}
 
 	// successTime should be 0, totalTime should be 1
-	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
-		DefaultManager.JobMap[entryId].TotalCount != 1 {
+	if manager.JobMap[entryId].SuccessCount != 0 ||
+		manager.JobMap[entryId].TotalCount != 1 {
 		t.FailNow()
 	}
 }
@@ -141,63 +142,33 @@ func TestOnlyOne(t *testing.T) {
 	resetRunner()
 	resetTmp()
 	OnJobReturn(hookAppendResultToTmp)
-	DefaultManager.SetConfig(CronManagerConfig{false, true, 0, 0})
-	DefaultManager.Start()
+	manager.SetConfig(CronManagerConfig{false, true, 0, 0})
+	manager.Start()
 
-	entryId, _ :=DefaultManager.Add("@every 2s", TimeOutJob{}, nil)
+	entryId, _ :=manager.Add("@every 2s", TimeOutJob{}, nil)
 	// only one running even every 2s
-	time.Sleep(5500 * time.Millisecond)
+	time.Sleep(8 * time.Second)
 	if tmp[1] != "" || tmp[0] == ""{
 		print("Fail: Two job return")
 		t.FailNow()
 	}
 
 	// status should be "STOP"
-	if DefaultManager.JobMap[entryId].Status() != "RUNNING" {
+	if manager.JobMap[entryId].Status() != "RUNNING" {
 		print("Fail: Status should be running")
 		t.FailNow()
 	}
 
-	// successTime should be 0, totalTime should be 1
-	if DefaultManager.JobMap[entryId].SuccessCount != 0 ||
-		DefaultManager.JobMap[entryId].TotalCount != 0 {
+	// successTime should be 1, totalTime should be 1
+	if manager.JobMap[entryId].SuccessCount != 1 ||
+		manager.JobMap[entryId].TotalCount != 1 {
+		print("Fail: Status should be running")
 		t.FailNow()
 	}
 }
 
-func TestValidate(t *testing.T) {
-	if !Validate("@every 1m") {
-		t.Fail()
-	}
-
-	if !Validate("* * 0-5 * * ?") {
-		t.Fail()
-	}
-
-	if !Validate("@daily") {
-		t.Fail()
-	}
-
-	if !Validate("0 0 0 ? * MON") {
-		t.Fail()
-	}
-
-	if !Validate("TZ=Asia/Shanghai 0 0 0 ? * SUN") {
-		t.Fail()
-	}
-
-	if !Validate("TZ=Asia/Shanghai 0 * * ? * 0/1") {
-		t.Fail()
-	}
-}
 
 
-func TestNext(t *testing.T) {
-	next, _ := Next("TZ=Asia/Shanghai 0 0 0 ? * 0/1")
-	fmt.Println(next.Date())
-	fmt.Println(next.Hour())
-	fmt.Println(next.Minute())
-}
 
 
 

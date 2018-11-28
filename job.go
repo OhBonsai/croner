@@ -39,10 +39,14 @@ type WrappedJob struct {
 }
 
 
+type JobRunReturnWithEid struct {
+	JobRunReturn
+	Eid int
+}
+
 type JobRunReturn struct {
 	Value interface{}
 	Error error
-	Eid   int
 }
 
 type JobInf interface {
@@ -81,7 +85,10 @@ func (j *WrappedJob) Now() {
 			if !j.father.ignorePanic {
 				j.father.DisActive(j.Id)
 			}
-			j.father.jobReturns <- JobRunReturn{nil, JobRunError{errString}, j.Id}
+			j.father.jobReturnsWithEid <- JobRunReturnWithEid{
+				JobRunReturn{nil,JobRunError{errString},},
+				j.Id,
+			}
 		}
 		return
 	}()
@@ -105,23 +112,31 @@ func (j *WrappedJob) Now() {
 
 	if j.father.timeInterrupt > 0 {
 		t := time.NewTimer(time.Duration(j.father.timeInterrupt) *time.Second)
+		var done = make(chan bool)
+		defer close(done)
+		go func(){
+			j.execute()
+			done <- true
+		}()
 		select {
 		case <- t.C:
 			panic(fmt.Sprint("Timeout ", j.father.timeInterrupt, "s"))
-		case j.father.jobReturns <- j.Inner.Run():
-			t.Stop()
+		case <- done:
+			return
 		}
 	}
 
-	ret := j.Inner.Run()
-	ret.Eid = j.Id
-	j.father.jobReturns <- ret
-	j.SuccessCount += 1
-	j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
+	j.execute()
 }
 
 func (j *WrappedJob) Run() {
 	j.Now()
 	return
+}
+
+func (j *WrappedJob) execute() {
+	j.father.jobReturnsWithEid <- JobRunReturnWithEid{j.Inner.Run(), j.Id}
+	j.SuccessCount += 1
+	j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
 }
 

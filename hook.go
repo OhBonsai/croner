@@ -4,10 +4,10 @@ import "sort"
 
 type CronHook struct {
 	order int
-	f func(runReturn *JobRunReturn)
+	f func(runReturn *JobRunReturnWithEid)
 }
 
-func OnJobReturn(f func(runReturn *JobRunReturn), order ...int){
+func OnJobReturn(f func(runReturn *JobRunReturnWithEid), order ...int){
 	jobReturnHooks = jobReturnHooks.Add(f, order...)
 }
 
@@ -17,7 +17,7 @@ type CronHooks []CronHook
 var jobReturnHooks CronHooks
 
 
-func(h CronHooks) Run(runReturn *JobRunReturn) {
+func(h CronHooks) Run(runReturn *JobRunReturnWithEid) {
 	sort.Sort(h)
 	for _, hook := range h {
 		hook.f(runReturn)
@@ -25,7 +25,7 @@ func(h CronHooks) Run(runReturn *JobRunReturn) {
 }
 
 
-func(h CronHooks) Add(fn func(runReturn *JobRunReturn), order ...int) CronHooks {
+func(h CronHooks) Add(fn func(runReturn *JobRunReturnWithEid), order ...int) CronHooks {
 	o := 1
 	if len(order) > 0 {
 		o = order[0]

@@ -6,15 +6,15 @@ import (
 )
 
 type CronManager struct {
-	JobMap        map[int] *WrappedJob
-	MainCron      *cron.Cron
-	jobReturns    chan JobRunReturn
-	stop          chan struct{}
-	ignorePanic   bool
-	onlyOne       bool
-	poolSize      uint
-	timeInterrupt uint
-	running       bool
+	JobMap            map[int] *WrappedJob
+	MainCron          *cron.Cron
+	jobReturnsWithEid chan JobRunReturnWithEid
+	stop              chan struct{}
+	ignorePanic       bool
+	onlyOne           bool
+	poolSize          uint
+	timeInterrupt     uint
+	running           bool
 }
 
 
@@ -25,7 +25,7 @@ func NewCronManager(c CronManagerConfig) *CronManager {
 	return &CronManager{
 		make(map[int] *WrappedJob),
 		cron.New(),
-		make(chan JobRunReturn, 10),
+		make(chan JobRunReturnWithEid, 10),
 		make(chan struct{}),
 		c.IgnorePanic,
 		c.OnlyOne,
@@ -112,7 +112,7 @@ func (r *CronManager) run() {
 	go func(){
 		for {
 			select {
-			case value := <-r.jobReturns:
+			case value := <-r.jobReturnsWithEid:
 				jobReturnHooks.Run(&value)
 			case <-r.stop:
 				return
