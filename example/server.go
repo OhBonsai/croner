@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/DeanThompson/ginpprof"
 	"fmt"
 	"os"
 	"time"
@@ -112,7 +111,7 @@ func Status(c *gin.Context) {
 
 func main() {
 	// push job run return into channel
-	croner.OnJobReturn(func(runReturn *croner.JobRunReturn) {
+	croner.OnJobReturn(func(runReturn *croner.JobRunReturnWithEid) {
 		say := runReturn.Value.(string)
 		ch <- say
 	})
@@ -120,8 +119,7 @@ func main() {
 	manager.Start()
 
 	r := gin.Default()
-	r.LoadHTMLGlob("example/*.html")
-	ginpprof.Wrapper(r)
+	r.LoadHTMLGlob("*.html")
 	r.POST("/job", CreateJob)
 	r.GET("/echo", Echo)
 	r.GET("/status", Status)
