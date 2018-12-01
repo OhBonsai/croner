@@ -1,12 +1,12 @@
 package croner
 
 import (
-	"sync"
 	"fmt"
+	"gopkg.in/robfig/cron.v2"
+	"reflect"
+	"sync"
 	"sync/atomic"
 	"time"
-	"reflect"
-	"gopkg.in/robfig/cron.v2"
 )
 
 const (
@@ -24,7 +24,6 @@ func (err JobRunError) Error() string {
 	return err.Message
 }
 
-
 type WrappedJob struct {
 	Id           int
 	Name         string
@@ -37,7 +36,6 @@ type WrappedJob struct {
 	Info         interface{}
 	Next         time.Time
 }
-
 
 type JobRunReturnWithEid struct {
 	JobRunReturn
@@ -56,9 +54,9 @@ type JobInf interface {
 func NewWrappedJob(job JobInf, r *CronManager) *WrappedJob {
 	name := reflect.TypeOf(job).Name()
 	return &WrappedJob{
-		Inner: job,
+		Inner:  job,
 		father: r,
-		Name: name,
+		Name:   name,
 	}
 }
 
@@ -86,7 +84,7 @@ func (j *WrappedJob) Now() {
 				j.father.DisActive(j.Id)
 			}
 			j.father.jobReturnsWithEid <- JobRunReturnWithEid{
-				JobRunReturn{nil,JobRunError{errString},},
+				JobRunReturn{nil, JobRunError{errString}},
 				j.Id,
 			}
 		}
@@ -97,12 +95,12 @@ func (j *WrappedJob) Now() {
 	//print("Plan<", j.Name, "> ", time.Now().Minute(),":" ,time.Now().Second(), "   Wrapped JOB <", j,"> running\n")
 
 	// 同一时间，该任务只会执行一次， 比如一个任务要执行1小时，周期设置5s。 那么不会有更多的协程出来多次执行该任务
-	if j.father.onlyOne{
+	if j.father.onlyOne {
 		j.running.Lock()
 		defer j.running.Unlock()
 	}
 
-	if j.father.poolSize > 0 && permit != nil{
+	if j.father.poolSize > 0 && permit != nil {
 		permit <- struct{}{}
 		defer func() { <-permit }()
 	}
@@ -111,17 +109,17 @@ func (j *WrappedJob) Now() {
 	defer atomic.StoreUint32(&(j.status), IDLE)
 
 	if j.father.timeInterrupt > 0 {
-		t := time.NewTimer(time.Duration(j.father.timeInterrupt) *time.Second)
+		t := time.NewTimer(time.Duration(j.father.timeInterrupt) * time.Second)
 		var done = make(chan bool)
 		defer close(done)
-		go func(){
+		go func() {
 			j.execute()
 			done <- true
 		}()
 		select {
-		case <- t.C:
+		case <-t.C:
 			panic(fmt.Sprint("Timeout ", j.father.timeInterrupt, "s"))
-		case <- done:
+		case <-done:
 			return
 		}
 	}
@@ -137,6 +135,6 @@ func (j *WrappedJob) Run() {
 func (j *WrappedJob) execute() {
 	j.father.jobReturnsWithEid <- JobRunReturnWithEid{j.Inner.Run(), j.Id}
 	j.SuccessCount += 1
+	// if j.running.isLock()
 	j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
 }
-
