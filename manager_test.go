@@ -45,6 +45,7 @@ func (j ReturnSoonJob) Run() JobRunReturn{
 type Time5SecJob struct {}
 
 func (j Time5SecJob) Run() JobRunReturn {
+	fmt.Println("Timeout Job Current Time: ", time.Now().Minute(), ":" ,time.Now().Second())
 	time.Sleep(5 * time.Second)
 	return JobRunReturn{"Hello , I am a timeout job", nil }
 }
@@ -52,6 +53,7 @@ func (j Time5SecJob) Run() JobRunReturn {
 
 // hook function when job return. push value in tmp array
 func hookAppendResultToTmp(runReturn *JobRunReturnWithEid) {
+	fmt.Println("Hook Current Time: ", time.Now().Minute(), ":" ,time.Now().Second())
 	for i, v := range tmp{
 		if v == ""{
 			tmpStr := fmt.Sprintf("%v", runReturn.Value)
@@ -209,21 +211,22 @@ func TestNotOnlyOne(t *testing.T) {
 	// 2s-7s  second execution
 	// 4s-8s  third execution but not finish
 
-	if tmp[1] != "" || tmp[0] == ""{
-		print("Fail: Two job return")
+	if tmp[2] != "" || tmp[1] == ""{
+		fmt.Println(tmp)
+		fmt.Println("Fail: 2 job done, 1 job")
 		t.FailNow()
 	}
 
 	// status should be "STOP"
 	if manager.JobMap[entryId].Status() != "RUNNING" {
-		print("Fail: Status should be running")
+		fmt.Println("Fail: Status should be running")
 		t.FailNow()
 	}
 
 	// successTime should be 1, totalTime should be 1
-	if manager.JobMap[entryId].SuccessCount != 1 ||
-		manager.JobMap[entryId].TotalCount != 1 {
-		print("Fail: Status should be running")
+	if manager.JobMap[entryId].SuccessCount != 2 ||
+		manager.JobMap[entryId].TotalCount != 2 {
+		fmt.Println("Fail: Status should be running")
 		t.FailNow()
 	}
 }
