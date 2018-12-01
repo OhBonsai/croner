@@ -205,11 +205,13 @@ func TestNotOnlyOne(t *testing.T) {
 	manager.Start()
 
 	entryId, _ :=manager.Add("@every 2s", Time5SecJob{}, nil)
+	fmt.Println("Start All job: ", time.Now().Minute(), ":" ,time.Now().Second())
+
 	// one running even every 2s
-	time.Sleep(8 * time.Second)
-	// 0s-5s  first execution
-	// 2s-7s  second execution
-	// 4s-8s  third execution but not finish
+	time.Sleep(10 * time.Second)
+	// 2s-7s  first execution
+	// 4s-9s  second execution
+	// 6s-10s  third execution but not finish
 
 	if tmp[2] != "" || tmp[1] == ""{
 		fmt.Println(tmp)
