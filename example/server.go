@@ -1,14 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"github.com/OhBonsai/croner"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"fmt"
-	"os"
-	"time"
-	"github.com/OhBonsai/croner"
 	"net/http"
+	"os"
 	"sort"
+	"time"
 )
 
 var manager = croner.NewCronManager(croner.CronManagerConfig{
@@ -116,6 +116,10 @@ func main() {
 		ch <- say
 	})
 	croner.SetDefaultManager(manager)
+
+	// add a test job before start
+	manager.Add("@every 5s", JobS{5, "Default", "Cron manager"}, nil)
+
 	manager.Start()
 
 	r := gin.Default()
