@@ -9,7 +9,7 @@
 
 
 ## Example
-例子为`gin`,`vue`,`websocket`的在线聊天室。通过定义`schedule`(支持crontab和rubyclock)。让服务器周期发送消息到客户端。
+例子为`gin`,`websocket`的在线聊天室。通过定义`schedule`(支持crontab和rubyclock)。让服务器周期发送消息到客户端。
 这是一个没有实际用处的例子，但很好的演示了在WEB场景下如何`Manage`一个后台的定时任务。
 
 ### 启动
