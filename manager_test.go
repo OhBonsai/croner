@@ -58,6 +58,7 @@ func hookAppendResultToTmp(runReturn *JobRunReturnWithEid) {
 			break
 		}
 	}
+
 }
 
 // Simple test
@@ -155,6 +156,78 @@ func TestNotIgnorePanic(t *testing.T) {
 	}
 }
 
+// Test Pool size = 2
+func TestPoolSize(t *testing.T) {
+	resetRunner()
+	resetTmp()
+	// add job only on time
+	if len(jobReturnHooks) == 0 {
+		OnJobReturn(hookAppendResultToTmp)
+	}
+	manager.SetConfig(CronManagerConfig{false, false, 2, 0})
+	fmt.Println("Manager start running: ", time.Now().Minute(), ":", time.Now().Second())
+	manager.Start()
+
+	entryId, _ := manager.Add("@every 1s", Time3SecJob{}, nil)
+	// one running even every 2s
+	time.Sleep(5 * time.Second)
+	// 0s-1s  idle
+	// 1s-4s  first execution
+	// 2s-5s  second execution
+	// 3s-4s  third block
+	// 4s-5s  third execution
+	// 5s     forth block
+	if tmp[2] != "" || tmp[1] == "" {
+		fmt.Print(tmp)
+		print("Fail: Two job return")
+		t.FailNow()
+	}
+
+	// status should be "STOP"
+	if manager.JobMap[entryId].Status() != "RUNNING" {
+		print("Fail: Status should be running")
+		t.FailNow()
+	}
+
+	// successTime should be 1, totalTime should be 1
+	if manager.JobMap[entryId].SuccessCount != 2 ||
+		manager.JobMap[entryId].TotalCount != 2 {
+		print("Fail: Status should be running")
+		t.FailNow()
+	}
+}
+
+//// Test Timeout =2
+//func TestTimeOut(t *testing.T) {
+//	resetRunner()
+//	resetTmp()
+//	// add job only on time
+//	if len(jobReturnHooks) == 0 {
+//		OnJobReturn(hookAppendResultToTmp)
+//	}
+//	manager.SetConfig(CronManagerConfig{true, false, 0, 2})
+//	fmt.Println("Manager start running: ", time.Now().Minute(), ":", time.Now().Second())
+//	manager.Start()
+//
+//	entryId, _ := manager.Add("@every 1s", Time3SecJob{}, nil)
+//	// one running even every 2s
+//	time.Sleep(5 * time.Second)
+//	// 0s-1s  idle
+//	// 1s-4s  first execution, but timeout in 3s
+//	// 2s-5s  second execution, but timeout in 4s
+//
+//	if tmp[1] != "" || tmp[0] != "" {
+//		fmt.Print(tmp)
+//		t.FailNow()
+//	}
+//
+//	if manager.JobMap[entryId].SuccessCount != 0 ||
+//		manager.JobMap[entryId].TotalCount != 2 {
+//		print("Fail: Status should be running")
+//		t.FailNow()
+//	}
+//}
+
 // Test Only One = True, Each job only execute one time , no matter what schedule is
 func TestOnlyOne(t *testing.T) {
 	resetRunner()
@@ -194,14 +267,18 @@ func TestOnlyOne(t *testing.T) {
 	}
 
 	// wait all execution done
-	resetRunner()
-	time.Sleep(5 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
+	select {
+	case <-ticker.C:
+		return
+	case <-manager.jobReturnsWithEid:
+		return
+	}
 }
 
 // Test only one = False, parallel job running
 func TestNotOnlyOne(t *testing.T) {
 	resetRunner()
-	time.Sleep(5 * time.Second)
 	resetTmp()
 	// add job only on time
 	if len(jobReturnHooks) == 0 {
