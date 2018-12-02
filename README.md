@@ -6,7 +6,6 @@
 4. 提供参数`ONLY_ONE`支持 只有任务前一次执行完成，才执行。 比如一个任务执行5分钟，周期为一分钟，五分钟只会执行一次
 5. 提供最大任务数量参数`POOL_SIZE`
 6. 提供接口查看所有任务的状态
-7. 任务最大执行时间参数`TIME_INT`
 
 
 ## Example
@@ -14,6 +13,13 @@
 这是一个没有实际用处的例子，但很好的演示了在WEB场景下如何`Manage`一个后台的定时任务。
 
 ### 启动
-```docker run -p 80:80 ohbonsai/restcron```
-打开[http://localhost:80](http://localhost:80)
+```
+go get -u "github.com/OhBonsai/croner"
+go get -u "github.com/gin-gonic/gin"
+go get -u "github.com/gorilla/websocket"
+cd $GOPATH/src/github.com/OhBonsai/croner/example
+
+go run server.go 
+# Open localhost:8000
+```
 
