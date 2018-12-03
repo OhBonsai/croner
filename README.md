@@ -4,7 +4,7 @@ Manage crontab in golang， **Star is the best praise and gift...**
 
 
 ## Function
-In development, we often need to set time tasks. [Golang Cron](https://github.com/robfig/cron/tree/v2) provides some
+In development, we often need to manage time tasks. [Golang Cron](https://github.com/robfig/cron/tree/v2) provides some
 good basic schedule functions. But in some complex scenarios. It's not enough. Like:
 
 - Any task could fail. If the task fails. try again or stop this task?
@@ -33,10 +33,9 @@ go run server.go
 ![image](https://upload-images.jianshu.io/upload_images/3981759-cf668d205086d9bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
 )
 
-1. define some time task
-2. view all task status
-3. each task will send data to terminal periodically
-
+1. Define some time task
+2. View all task status
+3. Each task will send data to terminal periodically
 
 
 
