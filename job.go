@@ -135,6 +135,10 @@ func (j *WrappedJob) Run() {
 func (j *WrappedJob) execute() {
 	j.father.jobReturnsWithEid <- JobRunReturnWithEid{j.Inner.Run(), j.Id}
 	j.SuccessCount += 1
-	// if j.running.isLock()
-	j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
+	if j.father.onlyOne {
+		// sometimes will fail.
+		j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
+	}else{
+		j.Next = j.father.MainCron.Entry(cron.EntryID(j.Id)).Next
+	}
 }
