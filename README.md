@@ -1,3 +1,7 @@
+**DON'T USE IT IN PROD**
+
+**抱歉， 这个程序是刚接触golang写的。 很多地方完全错误。 请不要在生产中使用**
+
 # croner
 
 Manage crontab in golang， **Star is the best praise and gift...**
